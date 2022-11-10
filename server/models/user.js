@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
     },
     postCount:{
         type: Number,
-        default: 0
+         default: 0
     },
     isBlocked: {
         type: Boolean,
@@ -37,6 +37,7 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default:false
     },
+    
     role: {
         type: String,
         Enum:["Admin","Guest", "Blogger"]
@@ -63,11 +64,19 @@ const userSchema = new mongoose.Schema({
             }
         ]
     },
+    followers: {
+        type: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+         }
+     ]
+    },
     following: {
         type: [
             {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: "User"
+                ref: "User",
          }
      ]
     },
@@ -86,7 +95,7 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     }
-},
+    },
     {
         toJSON: {
             virtual: true

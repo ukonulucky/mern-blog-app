@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler")
 const { generateToken } = require("../../config/token/generateToke")
+const { validate } = require("../../models/user")
 
 const userModel = require("../../models/user")
 const validateId = require("../../utils/validateId")
@@ -26,7 +27,15 @@ const userLogin = asyncHandler(async(req, res) => {
     const userFound = await userModel.findOne({ email })
  
     if (userFound && await userFound.isPasswordMatch(password)) {
-        
+        const token = generateToken(userFound._id)
+        if (token) {
+            res.cookie("loginToken", token, {
+                maxAge: 24 * 60 * 60 * 1000
+            })
+        } else {
+            res.statusCode = 500
+            throw new Error("user login failded")
+        }
         res.json({
             message: "user logged in successful",
             token: generateToken(userFound._id)
@@ -50,10 +59,9 @@ const fetchAllUsers = asyncHandler(async (req, res) => {
 
 const fetchUser = asyncHandler(async (req, res) => {
     const { id } = req.params
-    console.log(id)
     validateId(id) 
+    const { user } = req
     try {
-        const user = await userModel.findOne({ _id:id })
         if (user) {
             res.json(user)
         } else {
@@ -82,6 +90,167 @@ const deleteUser = asyncHandler(async (req, res) => {
 
 })
 
+const updateUser = asyncHandler(async (req, res) => {
+    const { _id } = req.user
+    validateId(_id)
+    const { firstName, lastName, email } = req.body
+    if (_id) {
+        const user = await userModel.findByIdAndUpdate(_id, {
+              firstName, lastName, email
+        }, {
+            new: true,
+            runValidators : true
+        })
+        if (!user) {
+            throw new Error("user not found")
+        }
+        res.json(user)
+      }
+})
+
+const updatePassword = asyncHandler(async (req, res) => {
+    const { password, email } = req.body
+    console.log(email, password)
+    if (!password || !email) {
+        throw new Error("password and email field must be filed")
+    }
+    const user = await userModel.findOne({ email })
+    if (user) {
+        user.password = password || user.password
+        user.email = user.email
+        user.lastName = user.lastName
+        user.firstName = user.firstName
+        const updatedUser = await user.save()
+        if (!updateUser) {
+            throw new Error("user failed to update")
+        }
+        res.json(updatedUser)
+
+    }
+    else {
+        throw new Error("user not found")
+    }
+
+
+})
+
+const followUser = asyncHandler(async (req, res) => {
+    // destruction the id of the user we wish to follow from body
+    const { userToFollowId } = req.body
+    const { _id } = req.user
+    validateId(_id)
+    console.log(_id,userToFollowId)
+
+    if (!userToFollowId || !_id) {
+        throw new Error("cant follow user")
+    }
+    // check if user is already following
+    
+        const checkIfFollowing = req.user.following.find(i => i.toString() === userToFollowId.toString())
+    if (checkIfFollowing) {
+        res.json("user allready following")
+        return 
+    }
+    
+    // adding users to follow array of loggedInUser
+    const logedInUser = await userModel.findByIdAndUpdate(_id, {
+        $push: { following: userToFollowId },
+        isFollowing: true
+    }, {
+        new: true,
+        runValidators: true
+    })
+
+    // adding the loggedInUser to the followers array of the userToFollow
+    const userToFollowArray = await userModel.findByIdAndUpdate(userToFollowId, {
+        $push: {
+            followers: _id
+        }
+       
+    }, {
+        new: true,
+        runValidators: true   
+    })
+   
+
+
+    if (!userToFollowArray) {
+        res.statusCode = 500
+        throw new Error("cant follow user")
+    }
+    res.json({
+        message: "user following successful"
+    })
+
+})
+
+const unFollow = asyncHandler(async (req, res) => {
+    const { _id } = req.user
+    const { userIdToUnFollowId } = req.body
+    
+    if (!_id || !userIdToUnFollowId) throw new Error("user to be unfollowes does not exist")
+    // finds user following by index and remove the logedInUser index from the follower array
+    const userFollowing = await userModel.findByIdAndUpdate(userIdToUnFollowId, {
+        $pull: {
+            followers: _id
+        },
+        isUnFollowing: true
+    }, {
+        new: true
+    })
+
+
+    // finds user following by index and remove the logedInUser index from the follower array
+    
+    const userLoggedIn = await userModel.findByIdAndUpdate(_id, {
+        $pull: {
+            following: userIdToUnFollowId
+        },
+        isFollowing: false
+    }, {
+        new: true
+    })
+   
+    res.json({message: `user ${userFollowing.firstName} ${userFollowing.lastName} successfully unfollowed`})
+    
+
+})
+
+const blockUser = asyncHandler(async (req, res) => {
+    const { id } = req.params
+    validateId(id)
+    const user = await userModel.findByIdAndUpdate(id, {
+        isBlocked: true
+    }, {
+        new : true
+    })
+    if (!user) {
+        throw new Error("user not found and failed to unblock the user")
+    }
+    res.json({
+        message: "user blocked succcessfully",
+        data: user
+    })
+})
+
+const unBlockUser = asyncHandler(async (req, res) => {
+    const { id } = req.params
+    validateId(id)
+    const user = await userModel.findByIdAndUpdate(id, {
+        isBlocked: false
+    }, {
+        new: true
+    })
+    if (!user) {
+        throw new Error("user not found and failed to unblock the user")
+    }
+    res.json({
+        message: "user ubcloked successfully",
+        data: user
+    })
+})
+
 module.exports = {
-    userRegister, userLogin, fetchAllUsers, fetchUser, deleteUser
+    userRegister, userLogin, fetchAllUsers, fetchUser, deleteUser, updateUser,
+    updatePassword, followUser, unFollow, blockUser, unBlockUser
 }

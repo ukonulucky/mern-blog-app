@@ -1,8 +1,8 @@
 const mongoose = require("mongoose")
 
 
-const validateId = (id) => {
-    const isValid = mongoose.Types.ObjectId.isValid(id)
+const validateId = (_id) => {
+    const isValid = mongoose.Types.ObjectId.isValid(_id)
     if(!isValid) throw new Error("invalid user id")
 }
 
