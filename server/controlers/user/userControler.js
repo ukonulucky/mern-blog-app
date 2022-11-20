@@ -250,6 +250,10 @@ const unBlockUser = asyncHandler(async (req, res) => {
     })
 })
 
+const loggedUser = asyncHandler(async (req, res) => {
+    
+})
+
 module.exports = {
     userRegister, userLogin, fetchAllUsers, fetchUser, deleteUser, updateUser,
     updatePassword, followUser, unFollow, blockUser, unBlockUser
