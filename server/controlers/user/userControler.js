@@ -25,7 +25,7 @@ const userRegister = asyncHandler(
 const userLogin = asyncHandler(async(req, res) => {
     const { email, password } = req.body
     const userFound = await userModel.findOne({ email })
- 
+  
     if (userFound && await userFound.isPasswordMatch(password)) {
         const token = generateToken(userFound._id)
         if (token) {
@@ -59,6 +59,7 @@ const fetchAllUsers = asyncHandler(async (req, res) => {
 
 const fetchUser = asyncHandler(async (req, res) => {
     const { id } = req.params
+    console.log(id)
     validateId(id) 
     const { user } = req
     try {
@@ -254,7 +255,15 @@ const loggedUser = asyncHandler(async (req, res) => {
     
 })
 
+const profilePhotoUpload = asyncHandler(async (req, res) => {
+  console.log(req.file)
+  res.json({
+    message: "success",
+    data: req.file
+  })
+})
+
 module.exports = {
     userRegister, userLogin, fetchAllUsers, fetchUser, deleteUser, updateUser,
-    updatePassword, followUser, unFollow, blockUser, unBlockUser
+    updatePassword, followUser, unFollow, blockUser, unBlockUser, profilePhotoUpload
 }

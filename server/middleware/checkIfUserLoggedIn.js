@@ -5,9 +5,9 @@ const asyncHandler = require("express-async-handler")
 
 const checkIfUserLoggedIn = asyncHandler(async (req, res, next) => {
     const { loginToken } = req.cookies
-   
+  
     if (loginToken) {
-     
+
         jwt.verify(loginToken, process.env.JWT_SECRET, async (err, decoded) => {
             if (err) {
                 res.json("user not logged in")
