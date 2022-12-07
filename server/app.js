@@ -4,12 +4,19 @@ const dbConnect = require("./config/db/dbConnect")
 const {errorHandler, noteFoundError} = require("./middleware/error")
 const userRouter = require("./routes/user/userRoutes")
 const cookieParser = require("cookie-parser")
+const { postRouth } = require("./routes/post/postRouth")
+
 
 
 const app = express()
 app.use(cookieParser())
 app.use(express.json())
+// user routes
 app.use("/api/user", userRouter)
+
+// post routes
+app.use("/api/post",postRouth)
+
 // Middleware Creation 
 app.use(noteFoundError)
 app.use(errorHandler)

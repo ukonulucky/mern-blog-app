@@ -1,8 +1,10 @@
 const asyncHandler = require("express-async-handler")
 const { generateToken } = require("../../config/token/generateToke")
 const { validate } = require("../../models/user")
+const path= require("path")
 
 const userModel = require("../../models/user")
+const cloudinaryUploadImage = require("../../utils/cloudinary")
 const validateId = require("../../utils/validateId")
 
 
@@ -255,13 +257,35 @@ const loggedUser = asyncHandler(async (req, res) => {
     
 })
 
-const profilePhotoUpload = asyncHandler(async (req, res) => {
-  console.log(req.file)
-  res.json({
-    message: "success",
-    data: req.file
-  })
+const profilePhotoUpload = asyncHandler(async (req, res, next) => {
+   
+
+ try {
+    const localPath = path.join(`public/profile-images-uploads/${req.file.fileName}`)
+    const data = await cloudinaryUploadImage(localPath)
+   if(data){
+    const {public_id, secure_url} = data;
+    const imageData = {public_id, secure_url} 
+    const user = await userModel.findByIdAndUpdate(req.user._id, {
+        profilePhoto: JSON.stringify(imageData)
+       
+    },{
+        new: true
+    })
+if(user){
+    res.json({
+        message: "profile photo uploaded successfully",
+        data: user
 })
+   }else{
+        const error = new Error("user not found and failed to upload profile photo")
+   next(error)
+    } }
+} catch (error) {
+  res.json(error.message)
+}
+})
+
 
 module.exports = {
     userRegister, userLogin, fetchAllUsers, fetchUser, deleteUser, updateUser,

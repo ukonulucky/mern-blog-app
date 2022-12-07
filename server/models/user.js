@@ -121,4 +121,4 @@ userSchema.methods.isPasswordMatch = async function (userPassword) {
 }
 const userModel = mongoose.model("User", userSchema)
 
-module.exports = userModel
+module.exports = userModel   
