@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler")
 const { generateToken } = require("../../config/token/generateToke")
 const { validate } = require("../../models/user")
 const path= require("path")
+const fs =  require("fs")
 
 const userModel = require("../../models/user")
 const cloudinaryUploadImage = require("../../utils/cloudinary")
@@ -259,10 +260,9 @@ const loggedUser = asyncHandler(async (req, res) => {
 
 const profilePhotoUpload = asyncHandler(async (req, res, next) => {
    
-
  try {
     const localPath = path.join(`public/profile-images-uploads/${req.file.fileName}`)
-    const data = await cloudinaryUploadImage(localPath)
+    const data = await cloudinaryUploadImage(localPath,"registerdUserImage")
    if(data){
     const {public_id, secure_url} = data;
     const imageData = {public_id, secure_url} 
@@ -273,10 +273,19 @@ const profilePhotoUpload = asyncHandler(async (req, res, next) => {
         new: true
     })
 if(user){
+    fs.unlinked(localPath, (err) => {
+          if(err){
+            console.log("image not deleted", err)
+            return
+          }
+          console.log("image successfully deleted")
+
+    })
     res.json({
         message: "profile photo uploaded successfully",
         data: user
 })
+
    }else{
         const error = new Error("user not found and failed to upload profile photo")
    next(error)

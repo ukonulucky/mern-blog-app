@@ -9,10 +9,10 @@ cloudinary.config({
 })
 
 
-const cloudinaryUploadImage = async (fileToUpload) => {
+const cloudinaryUploadImage = async (fileToUpload, folderName = "others") => {
   try {
     const data = await cloudinary.uploader.upload(fileToUpload, {
-        folder:"Registered users"
+        folder: folderName
     })
     return data;
   } catch (error) {

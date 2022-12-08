@@ -58,6 +58,37 @@ try {
 
 }
 
+
+const reducePostImageSize =async (req, res, next) => {
+    try {
+        if(!req.file) {
+            return res.status(400).json({
+                message: "no file uploaded"
+            })
+            return next()
+        }
+     req.file.fileName = `user-${Date.now()}-${req.file.originalname}`
+      await sharp(req.file.buffer)
+      .resize(500, 500)
+      .toFormat("jpeg")
+      .jpeg({
+        quality: 90
+      }).toFile(path.join(`public/post/${req.file.fileName}`),(err,data) => {
+       if(err){
+       res.json({
+        message: "error occured while uploading image"
+       })
+       return
+       }
+       next()
+      })
+     
+    } catch (error) {
+        console.log(error)
+    }
+    
+    }
+    
 module.exports = {
-    imageUploadHandler, reduceImageSize
+    imageUploadHandler, reduceImageSize, reducePostImageSize
 }

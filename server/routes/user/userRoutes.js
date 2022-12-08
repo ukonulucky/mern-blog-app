@@ -23,7 +23,7 @@ userRouter.put("/unfollow", checkIfUserLoggedIn, unFollow)
 userRouter.put("/block-user/:id", checkIfUserLoggedIn, blockUser)
 userRouter.put("/unblock-user/:id",checkIfUserLoggedIn,unBlockUser)
 userRouter.put("/photo-update"
-,checkIfUserLoggedIn,imageUploadHandler.single("image/png")
+,checkIfUserLoggedIn,imageUploadHandler.single("image")
 ,reduceImageSize
 ,profilePhotoUpload)
 
