@@ -1,5 +1,5 @@
 const express = require("express")
-const { userRegister, userLogin, fetchAllUsers, fetchUser, deleteUser, updateUser, updatePassword, followUser, unFollow, blockUser, unBlockUser, profilePhotoUpload } = require("../../controlers/user/userControler")
+const { userRegister, userLogin, fetchAllUsers, fetchUser, deleteUser, updateUser, updatePassword, followUser, unFollow, blockUser, unBlockUser, profilePhotoUpload, fetchUserProfile } = require("../../controlers/user/userControler")
 const checkIfUserLoggedIn = require("../../middleware/checkIfUserLoggedIn")
 const { imageUploadHandler, reduceImageSize } = require("../../middleware/imageUploadHandler")
 
@@ -26,5 +26,7 @@ userRouter.put("/photo-update"
 ,checkIfUserLoggedIn,imageUploadHandler.single("image")
 ,reduceImageSize
 ,profilePhotoUpload)
+
+userRouter.get("/userProfile/:id",checkIfUserLoggedIn,fetchUserProfile)
 
 module.exports = userRouter

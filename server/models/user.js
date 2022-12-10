@@ -98,10 +98,10 @@ const userSchema = new mongoose.Schema({
     },
     {
         toJSON: {
-            virtual: true
+            virtuals: true
         },
         toObject: {
-            virtual: true
+            virtuals: true
         },
         timestamp: true
     })
@@ -114,6 +114,13 @@ userSchema.pre("save", async function (next) {
     this.password = await bcrypt.hash(this.password, salt)
     next()
 
+})
+// creating a virtual fied fro all the post a user makes
+userSchema.virtual("allUserPost", {
+    ref:"PostModel",
+    foreignField:"user",
+    localField:"_id",
+    justOne:false  
 })
 
 userSchema.methods.isPasswordMatch = async function (userPassword) {

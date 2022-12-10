@@ -7,6 +7,7 @@ const fs =  require("fs")
 const userModel = require("../../models/user")
 const cloudinaryUploadImage = require("../../utils/cloudinary")
 const validateId = require("../../utils/validateId")
+const { PostModel } = require("../../models/PostSchema")
 
 
 const userRegister = asyncHandler(
@@ -295,8 +296,21 @@ if(user){
 }
 })
 
+const fetchUserProfile = asyncHandler(async (req, res,next) => {
+    const {id}= req.params
+    validateId(id)
+    try {
+      
+      const user = await userModel.findById(id).populate("allUserPost")
+     user ? res.status(200).json(user) : null
+     
+    } catch (error) {
+    throw new Error(error.message)
+    }
+  })
+
 
 module.exports = {
     userRegister, userLogin, fetchAllUsers, fetchUser, deleteUser, updateUser,
-    updatePassword, followUser, unFollow, blockUser, unBlockUser, profilePhotoUpload
+    updatePassword, followUser, unFollow, blockUser, unBlockUser, profilePhotoUpload, fetchUserProfile
 }
