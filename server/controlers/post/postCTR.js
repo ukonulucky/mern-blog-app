@@ -128,6 +128,120 @@ const updatePost = expressAsyncHandler(async (req, res) => {
   }
 })
 
+const toggleAndLikePost  = expressAsyncHandler(async (req, res) => {
+    const {_id} = req.user
+   const { postId } = req.body
+ 
+    validateId(_id)
+    validateId(postId)
+  
+   try {
+    
+    const post = await PostModel.findById(postId)
+    if(!post){
+      throw new Error("Could not find post")
+    }
+    const { likes, disLikes } = post
+    // ckecking if the user has already liked the post
+    const likedId = likes.find(userId => userId.toString() === _id.toString())
+    if(likedId){
+     const updatedPost = await PostModel.findOneAndUpdate(postId, {
+      $pull:{
+        likes: _id
+      },
+      isLiked: false
+     }, {
+      new: true
+     })
+     res.status(200).json(updatedPost)
+    }else{
+      const disLikesId = disLikes.find(userId => userId.toString() === _id.toString())
+    
+      if(disLikesId){
+  await PostModel.findByIdAndUpdate(postId, {
+    $pull:{
+      disLikes: _id
+  },
+  isDisLiked: false
+})
+      }
+      const updatedPost = await PostModel.findByIdAndUpdate(postId, {
+         $push:{
+          likes: _id
+        },
+        isLiked: true
+       } , {
+        new: true
+       })
+    
+
+       res.status(200).json(updatedPost)
+    }
+   } catch (error) {
+    throw new Error(error.message)
+   }
+
+})
+
+const toggleAndDislikePost = expressAsyncHandler(async(req, res) => {
+  const { postId } = req.body
+  validateId(postId)
+  validateId(req.user._id)
+
+
+  try {
+     const post =await PostModel.findById(postId)
+     if(!post){
+      throw new Error("Could not find post")
+     }
+     const {likes, disLikes} = post
+     const disLikesId = disLikes.find(userId => userId.toString() === req.user._id.toString())
+    
+     if(disLikesId){
+         const updatedPost = await PostModel.findByIdAndUpdate(postId, {
+          $pull:{
+            disLikes: req.user._id
+          },
+          isDisLiked:false,
+         },
+         {
+          new: true
+         })
+         res.status(200).json(updatedPost)
+     } else{
+      const likedId = likes.find(userId => userId.toString() === req.user._id.toString())
+    
+      if(likedId){
+         await PostModel.findByIdAndUpdate(postId, {
+          $pull:{
+            likes: req.user._id
+          }, 
+            isLiked: false
+          
+         }, {
+          new: true
+         });
+      }
+      const updatedPost = await PostModel.findByIdAndUpdate(postId, {
+        $push:{
+          disLikes: req.user._id
+        },
+        isDisLiked:true,
+       },
+       {
+        new: true
+       })
+       res.status(200).json(updatedPost)
+     }
+
+
+  } catch (error) {
+  throw new Error(error.message)
+  }
+
+})
+
 module.exports= {
-  postComment, fetchAllPost, fetchSinglePost, updatePost, deletePost
+  postComment, fetchAllPost, fetchSinglePost, updatePost, deletePost,
+  toggleAndLikePost, toggleAndDislikePost
 }

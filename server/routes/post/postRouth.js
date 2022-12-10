@@ -1,5 +1,5 @@
 const express = require("express")
-const { postComment, fetchAllPost, fetchSinglePost, updatePost, deletePost } = require("../../controlers/post/postCTR")
+const { postComment, fetchAllPost, fetchSinglePost, updatePost, deletePost, toggleAndLikePost, toggleAndDislikePost } = require("../../controlers/post/postCTR")
 const { fetchUserProfile } = require("../../controlers/user/userControler")
 const checkIfUserLoggedIn = require("../../middleware/checkIfUserLoggedIn")
 const { imageUploadHandler, reducePostImageSize } = require("../../middleware/imageUploadHandler")
@@ -16,9 +16,11 @@ postRouth.get("/singlePost/:id",checkIfUserLoggedIn, fetchSinglePost)
 
 postRouth.put("/updatePost/:id",checkIfUserLoggedIn, updatePost)
 
+postRouth.put("/like",checkIfUserLoggedIn, toggleAndLikePost)
+
+postRouth.put("/dislike",checkIfUserLoggedIn, toggleAndDislikePost)
 
 postRouth.delete("/deletePost/:id",checkIfUserLoggedIn, deletePost)
-
 
 module.exports= {
     postRouth
